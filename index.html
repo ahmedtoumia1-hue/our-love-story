@@ -1,1101 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Love Story - Digital Album 💖</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ahmed & Ikram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #ff4b6e;
+      --primary-hover: #ff2a55;
+      --bg: #fff5f6;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 60px;
+    }
+    header {
+      background: white;
+      text-align: center;
+      padding: 30px 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      position: relative;
+    }
+    h1 {
+      font-family: 'Caveat', cursive;
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+    .sub-title { font-size: 1.1rem; color: #718096; }
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    .status-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      background: #e6fffa;
+      color: #234e52;
+      border: 1px solid #b2f5ea;
+    }
 
-    <!-- React and Babel for single file app -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    .counter-card {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(255, 75, 110, 0.1);
+    }
+    .counter-days {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
 
-    <!-- Firebase SDK Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    .admin-bar {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: #4a5568; }
+    .btn-secondary:hover { background: #cbd5e0; }
 
-        window.FirebaseSDK = {
-            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-            getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection
-        };
-        window.dispatchEvent(new CustomEvent('firebase-sdk-ready'));
-    </script>
+    .admin-panel {
+      display: none;
+      max-width: 1000px;
+      margin: 10px auto 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        rose: {
-                            50: '#fff1f2',
-                            100: '#ffe4e6',
-                            200: '#fecdd3',
-                            300: '#fda4af',
-                            400: '#fb7185',
-                            500: '#f43f5e',
-                            600: '#e11d48',
-                        },
-                        cream: '#fffdf9'
-                    },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        hand: ['Caveat', 'cursive'],
-                        title: ['Dancing Script', 'cursive'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        body {
-            background: linear-gradient(135deg, #fff5f5 0%, #fed7aa 50%, #fecdd3 100%);
-            min-height: 100vh;
-        }
-        .polaroid-shadow {
-            box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-        }
-        .polaroid-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .polaroid-card:hover {
-            transform: translateY(-8px) rotate(1deg) scale(1.02);
-            box-shadow: 0 20px 30px -10px rgba(225, 29, 72, 0.25);
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #fff1f2;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #fda4af;
-            border-radius: 4px;
-        }
-    </style>
+    .gallery {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    .polaroid {
+      background: white;
+      padding: 15px 15px 25px 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border-radius: 4px;
+      transform: rotate(-1deg);
+      transition: 0.3s ease;
+      position: relative;
+    }
+    .polaroid:nth-child(even) { transform: rotate(1.5deg); }
+    .polaroid:hover { transform: translateY(-5deg) scale(1.02); z-index: 10; }
+
+    .polaroid img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 2px;
+      background: #f0f0f0;
+    }
+    .polaroid-caption {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .polaroid-title {
+      font-family: 'Caveat', cursive;
+      font-size: 1.8rem;
+      color: #2d3748;
+    }
+    .polaroid-date {
+      font-size: 0.8rem;
+      color: #a0aec0;
+      margin-bottom: 8px;
+    }
+    .polaroid-note {
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+
+    /* Modal Passcode */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 350px;
+      width: 90%;
+    }
+  </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-rose-200 selection:text-rose-900 pb-16">
-
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        const DEFAULT_CATEGORIES = ['Trips', 'Dates', 'Celebrations', 'Everyday'];
-
-        const DEFAULT_MEMORIES = [
-            {
-                id: '1',
-                title: 'Our First Date ☕',
-                date: '2023-02-14',
-                location: 'Cozy Downtown Café',
-                category: 'Dates',
-                description: 'The beginning of our beautiful story. I still remember your nervous, cute smile!',
-                image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-                isFavorite: true
-            },
-            {
-                id: '2',
-                title: 'First Summer Vacation 🌊',
-                date: '2023-07-20',
-                location: 'Sunny Beach',
-                category: 'Trips',
-                description: 'Warm sunshine, strawberry gelato, and endless laughter on the shore.',
-                image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-                isFavorite: true
-            },
-            {
-                id: '3',
-                title: 'Movie & Blanket Night 🍕',
-                date: '2023-11-10',
-                location: 'At Home',
-                category: 'Everyday',
-                description: 'Hot pizza, romantic comedy, and keeping your cold feet warm under the blanket.',
-                image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80',
-                isFavorite: false
-            }
-        ];
-
-        const compressImage = (file, maxWidth = 900, maxHeight = 900, quality = 0.75) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > maxWidth || height > maxHeight) {
-                            if (width > height) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            } else {
-                                width = Math.round((width * maxHeight) / height);
-                                height = maxHeight;
-                            }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                };
-            });
-        };
-
-        function App() {
-            const [memories, setMemories] = useState(() => {
-                const saved = localStorage.getItem('love_album_memories');
-                return saved ? JSON.parse(saved) : DEFAULT_MEMORIES;
-            });
-
-            const [categories, setCategories] = useState(() => {
-                const saved = localStorage.getItem('love_album_categories');
-                return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
-            });
-
-            const [startDate, setStartDate] = useState(() => {
-                return localStorage.getItem('love_album_start_date') || '2023-02-14';
-            });
-
-            const [adminPin, setAdminPin] = useState(() => {
-                return localStorage.getItem('love_album_admin_pin') || '1234';
-            });
-
-            const [isCloudSync, setIsCloudSync] = useState(false);
-            const [syncStatus, setSyncStatus] = useState('Connecting to Cloud...');
-
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [showPinModal, setShowPinModal] = useState(false);
-            const [pinInput, setPinInput] = useState('');
-            const [pinError, setPinError] = useState('');
-            const [isChangePinOpen, setIsChangePinOpen] = useState(false);
-            const [newPinInput, setNewPinInput] = useState('');
-            const [toastMessage, setToastMessage] = useState(null);
-
-            const [filterCategory, setFilterCategory] = useState('All');
-            const [searchTerm, setSearchTerm] = useState('');
-
-            // Modals
-            const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-            const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-            const [isDateModalOpen, setIsDateModalOpen] = useState(false);
-            const [selectedImageModal, setSelectedImageModal] = useState(null);
-            const [newCategoryName, setNewCategoryName] = useState('');
-
-            // New Memory Form State
-            const [newMemory, setNewMemory] = useState({
-                title: '',
-                date: new Date().toISOString().split('T')[0],
-                location: '',
-                category: DEFAULT_CATEGORIES[0],
-                description: '',
-                image: '',
-                isFavorite: false
-            });
-
-            const dbRef = useRef(null);
-            const appIdRef = useRef(typeof __app_id !== 'undefined' ? __app_id : 'ahmed-ikram-love-album');
-
-            const showToast = (msg) => {
-                setToastMessage(msg);
-                setTimeout(() => setToastMessage(null), 3000);
-            };
-
-            useEffect(() => {
-                const initFirebase = async () => {
-                    const fb = window.FirebaseSDK;
-                    if (!fb) return;
-
-                    try {
-                        let firebaseConfig = null;
-                        if (typeof __firebase_config !== 'undefined') {
-                            firebaseConfig = JSON.parse(__firebase_config);
-                        }
-
-                        if (!firebaseConfig) {
-                            setSyncStatus('Local Storage Mode');
-                            return;
-                        }
-
-                        const app = fb.initializeApp(firebaseConfig);
-                        const auth = fb.getAuth(app);
-                        const db = fb.getFirestore(app);
-                        dbRef.current = db;
-
-                        // Authentication
-                        let user = null;
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            const userCred = await fb.signInWithCustomToken(auth, __initial_auth_token);
-                            user = userCred.user;
-                        } else {
-                            const userCred = await fb.signInAnonymously(auth);
-                            user = userCred.user;
-                        }
-
-                        if (!user) {
-                            setSyncStatus('Auth Failed (Local Mode)');
-                            return;
-                        }
-
-                        setIsCloudSync(true);
-                        setSyncStatus('Live Sync Active ☁️');
-
-                        const appId = appIdRef.current;
-                        const dataColRef = fb.collection(db, 'artifacts', appId, 'public', 'data', 'memories');
-                        const configDocRef = fb.doc(db, 'artifacts', appId, 'public', 'data', 'config', 'album_settings');
-
-                        // Real-time listener for memories
-                        fb.onSnapshot(dataColRef, (snapshot) => {
-                            if (!snapshot.empty) {
-                                const cloudMemories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                                setMemories(cloudMemories);
-                            }
-                        }, (err) => console.error("Firestore sync error:", err));
-
-                        // Real-time listener for album config (start date, categories, pin)
-                        fb.onSnapshot(configDocRef, (docSnap) => {
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                if (data.startDate) setStartDate(data.startDate);
-                                if (data.categories) setCategories(data.categories);
-                                if (data.adminPin) setAdminPin(data.adminPin);
-                            }
-                        }, (err) => console.error("Firestore config sync error:", err));
-
-                    } catch (e) {
-                        console.error("Firebase init failed:", e);
-                        setSyncStatus('Local Storage Mode');
-                    }
-                };
-
-                if (window.FirebaseSDK) {
-                    initFirebase();
-                } else {
-                    window.addEventListener('firebase-sdk-ready', initFirebase);
-                }
-            }, []);
-
-            useEffect(() => {
-                localStorage.setItem('love_album_memories', JSON.stringify(memories));
-            }, [memories]);
-
-            useEffect(() => {
-                localStorage.setItem('love_album_categories', JSON.stringify(categories));
-            }, [categories]);
-
-            useEffect(() => {
-                localStorage.setItem('love_album_start_date', startDate);
-            }, [startDate]);
-
-            useEffect(() => {
-                localStorage.setItem('love_album_admin_pin', adminPin);
-            }, [adminPin]);
-
-            const saveConfigToCloud = async (updates) => {
-                const fb = window.FirebaseSDK;
-                if (!isCloudSync || !dbRef.current || !fb) return;
-                try {
-                    const appId = appIdRef.current;
-                    const configDocRef = fb.doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'config', 'album_settings');
-                    await fb.setDoc(configDocRef, updates, { merge: true });
-                } catch (err) {
-                    console.error("Cloud config save error:", err);
-                }
-            };
-
-            const calculateDaysTogether = () => {
-                const start = new Date(startDate);
-                const today = new Date();
-                const diffTime = Math.abs(today - start);
-                return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            };
-
-            const launchLoveConfetti = () => {
-                confetti({
-                    particleCount: 75,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#f43f5e', '#fb7185', '#fda4af', '#fecdd3']
-                });
-            };
-
-            const handleUnlockAdmin = (e) => {
-                e.preventDefault();
-                if (pinInput === adminPin) {
-                    setIsAdmin(true);
-                    setShowPinModal(false);
-                    setPinInput('');
-                    setPinError('');
-                    launchLoveConfetti();
-                } else {
-                    setPinError('Incorrect passcode. Please try again!');
-                }
-            };
-
-            const handleChangePin = async (e) => {
-                e.preventDefault();
-                const newPin = newPinInput.trim();
-                if (newPin.length < 4) {
-                    showToast("PIN code must be at least 4 characters.");
-                    return;
-                }
-                setAdminPin(newPin);
-                setIsChangePinOpen(false);
-                setNewPinInput('');
-                await saveConfigToCloud({ adminPin: newPin });
-                showToast("Admin PIN successfully updated!");
-            };
-
-            const handleAddMemory = async (e) => {
-                e.preventDefault();
-                if (!newMemory.title || !newMemory.image) return;
-
-                const memoryId = Date.now().toString();
-                const memoryToAdd = {
-                    ...newMemory,
-                    id: memoryId
-                };
-
-                const updatedMemories = [memoryToAdd, ...memories];
-                setMemories(updatedMemories);
-                setIsAddModalOpen(false);
-
-                // Reset form
-                setNewMemory({
-                    title: '',
-                    date: new Date().toISOString().split('T')[0],
-                    location: '',
-                    category: categories[0] || 'Trips',
-                    description: '',
-                    image: '',
-                    isFavorite: false
-                });
-
-                // Sync to Cloud
-                const fb = window.FirebaseSDK;
-                if (isCloudSync && dbRef.current && fb) {
-                    try {
-                        const appId = appIdRef.current;
-                        const docRef = fb.doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'memories', memoryId);
-                        await fb.setDoc(docRef, memoryToAdd);
-                    } catch (err) {
-                        console.error("Error saving memory to cloud:", err);
-                    }
-                }
-
-                launchLoveConfetti();
-                showToast("New memory added!");
-            };
-
-            const handleImageUpload = async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    try {
-                        const compressedDataUrl = await compressImage(file);
-                        setNewMemory(prev => ({ ...prev, image: compressedDataUrl }));
-                    } catch (err) {
-                        showToast("Failed to process image.");
-                    }
-                }
-            };
-
-            const handleAddCategory = async (e) => {
-                e.preventDefault();
-                const trimmed = newCategoryName.trim();
-                if (!trimmed) return;
-                if (categories.includes(trimmed)) {
-                    showToast("This tab already exists!");
-                    return;
-                }
-                const updated = [...categories, trimmed];
-                setCategories(updated);
-                setNewCategoryName('');
-                await saveConfigToCloud({ categories: updated });
-                showToast("Custom tab added!");
-            };
-
-            const handleDeleteCategory = async (catToDelete) => {
-                if (categories.length <= 1) {
-                    showToast("You must keep at least one category!");
-                    return;
-                }
-                const updated = categories.filter(c => c !== catToDelete);
-                setCategories(updated);
-                if (filterCategory === catToDelete) setFilterCategory('All');
-                await saveConfigToCloud({ categories: updated });
-            };
-
-            const toggleFavorite = async (id) => {
-                const target = memories.find(m => m.id === id);
-                if (!target) return;
-                const newFavState = !target.isFavorite;
-
-                setMemories(memories.map(m => m.id === id ? { ...m, isFavorite: newFavState } : m));
-
-                const fb = window.FirebaseSDK;
-                if (isCloudSync && dbRef.current && fb) {
-                    try {
-                        const appId = appIdRef.current;
-                        const docRef = fb.doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'memories', id);
-                        await fb.setDoc(docRef, { isFavorite: newFavState }, { merge: true });
-                    } catch (err) {
-                        console.error("Cloud fav update error:", err);
-                    }
-                }
-            };
-
-            const deleteMemory = async (id) => {
-                setMemories(memories.filter(m => m.id !== id));
-                if (selectedImageModal?.id === id) setSelectedImageModal(null);
-
-                const fb = window.FirebaseSDK;
-                if (isCloudSync && dbRef.current && fb) {
-                    try {
-                        const appId = appIdRef.current;
-                        const docRef = fb.doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'memories', id);
-                        await fb.deleteDoc(docRef);
-                    } catch (err) {
-                        console.error("Cloud delete error:", err);
-                    }
-                }
-                showToast("Memory deleted.");
-            };
-
-            const handleUpdateStartDate = async (newDate) => {
-                setStartDate(newDate);
-                await saveConfigToCloud({ startDate: newDate });
-            };
-
-            // Filtered Memories
-            const filteredMemories = memories.filter(m => {
-                const matchesCategory = filterCategory === 'All' || 
-                                        (filterCategory === 'Favorites' ? m.isFavorite : m.category === filterCategory);
-                const matchesSearch = m.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                      m.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                      m.location.toLowerCase().includes(searchTerm.toLowerCase());
-                return matchesCategory && matchesSearch;
-            });
-
-            // Backup Export & Import
-            const exportAlbum = () => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ startDate, categories, memories, adminPin }));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `Ahmed_and_Ikram_Love_Story_${new Date().toISOString().split('T')[0]}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-            };
-
-            const importAlbum = (e) => {
-                const fileReader = new FileReader();
-                if (!e.target.files[0]) return;
-                fileReader.readAsText(e.target.files[0], "UTF-8");
-                fileReader.onload = async (event) => {
-                    try {
-                        const parsed = JSON.parse(event.target.result);
-                        if (parsed.memories) setMemories(parsed.memories);
-                        if (parsed.categories) setCategories(parsed.categories);
-                        if (parsed.startDate) setStartDate(parsed.startDate);
-                        if (parsed.adminPin) setAdminPin(parsed.adminPin);
-
-                        await saveConfigToCloud({
-                            categories: parsed.categories || categories,
-                            startDate: parsed.startDate || startDate,
-                            adminPin: parsed.adminPin || adminPin
-                        });
-
-                        launchLoveConfetti();
-                        showToast("Backup imported successfully!");
-                    } catch (err) {
-                        showToast("Invalid backup file format.");
-                    }
-                };
-            };
-
-            return (
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 relative">
-
-                    {/* Toast Notification */}
-                    {toastMessage && (
-                        <div className="fixed top-5 right-5 z-50 bg-slate-900/90 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold backdrop-blur-md border border-slate-700 animate-bounce">
-                            {toastMessage}
-                        </div>
-                    )}
-
-                    {/* Header Section */}
-                    <header className="relative mb-8 text-center">
-                        <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
-                            {/* Cloud Sync Status Badge */}
-                            <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-rose-100 shadow-sm text-[11px] font-medium text-slate-600">
-                                <span className={`w-2 h-2 rounded-full ${isCloudSync ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`}></span>
-                                <span>{syncStatus}</span>
-                            </div>
-
-                            {/* Admin Mode Controls */}
-                            {isAdmin ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 shadow-sm">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                                        Admin Active
-                                    </span>
-                                    <button
-                                        onClick={() => setIsAdmin(false)}
-                                        className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded-full font-medium transition"
-                                    >
-                                        Lock Admin 🔒
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setShowPinModal(true)}
-                                    className="bg-white/80 hover:bg-white text-rose-600 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-rose-200 transition shadow-sm flex items-center gap-1.5"
-                                >
-                                    🔑 Admin Access
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="inline-block bg-white/80 backdrop-blur-md px-6 py-1.5 rounded-full shadow-sm mb-3 border border-rose-100">
-                            <span className="text-rose-500 font-bold text-xs tracking-wider uppercase flex items-center gap-2">
-                                ✨ Ahmed & Ikram ✨
-                            </span>
-                        </div>
-
-                        <h1 className="font-title text-5xl sm:text-7xl font-bold text-rose-600 mb-2 tracking-wide drop-shadow-sm">
-                            Our Love Story
-                        </h1>
-                        <p className="text-slate-600 max-w-lg mx-auto font-sans text-sm sm:text-base">
-                            A timeless live space to cherish all our favorite memories together, today and forever.
-                        </p>
-
-                        {/* Days Counter Card */}
-                        <div className="mt-6 inline-flex flex-col sm:flex-row items-center gap-4 bg-white/90 backdrop-blur-md p-4 sm:px-8 rounded-2xl polaroid-shadow border border-rose-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-rose-100 text-rose-600 rounded-xl">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-2xl font-bold text-slate-800 font-sans leading-none">
-                                        {calculateDaysTogether()} <span className="text-rose-500">Days</span>
-                                    </div>
-                                    <div className="text-xs text-slate-500 font-medium">of shared love & pure happiness</div>
-                                </div>
-                            </div>
-
-                            {isAdmin && (
-                                <button 
-                                    onClick={() => setIsDateModalOpen(true)}
-                                    className="text-xs text-rose-600 hover:text-rose-700 font-medium underline px-3 py-1.5 bg-rose-50 hover:bg-rose-100 rounded-lg transition"
-                                >
-                                    📅 Change Start Date
-                                </button>
-                            )}
-                        </div>
-                    </header>
-
-                    {/* Admin Toolkit Bar */}
-                    {isAdmin && (
-                        <div className="mb-6 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 text-rose-700 font-semibold text-sm">
-                                🛠️ <span>Admin Toolkit:</span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <button
-                                    onClick={() => setIsAddModalOpen(true)}
-                                    className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5"
-                                >
-                                    ➕ Add New Memory
-                                </button>
-                                <button
-                                    onClick={() => setIsCategoryModalOpen(true)}
-                                    className="px-4 py-2 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                                >
-                                    🏷️ Manage Custom Tabs
-                                </button>
-                                <button
-                                    onClick={() => setIsDateModalOpen(true)}
-                                    className="px-4 py-2 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                                >
-                                    📅 Change Anniversary Date
-                                </button>
-                                <button
-                                    onClick={() => setIsChangePinOpen(true)}
-                                    className="px-4 py-2 bg-white hover:bg-rose-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition"
-                                >
-                                    ⚙️ Change PIN
-                                </button>
-                                <button 
-                                    onClick={exportAlbum}
-                                    className="px-4 py-2 bg-white hover:bg-rose-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                                >
-                                    💾 Export Backup
-                                </button>
-                                <label className="px-4 py-2 bg-white hover:bg-rose-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
-                                    📥 Import Backup
-                                    <input type="file" accept=".json" onChange={importAlbum} className="hidden" />
-                                </label>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Dynamic Tabs & Filters */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-rose-100/50">
-                        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                            <button
-                                onClick={() => setFilterCategory('All')}
-                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                    filterCategory === 'All'
-                                        ? 'bg-rose-500 text-white shadow-md shadow-rose-200 scale-105'
-                                        : 'bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600'
-                                }`}
-                            >
-                                All
-                            </button>
-
-                            <button
-                                onClick={() => setFilterCategory('Favorites')}
-                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                    filterCategory === 'Favorites'
-                                        ? 'bg-rose-500 text-white shadow-md shadow-rose-200 scale-105'
-                                        : 'bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600'
-                                }`}
-                            >
-                                ❤️ Favorites
-                            </button>
-
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setFilterCategory(cat)}
-                                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                        filterCategory === cat
-                                            ? 'bg-rose-500 text-white shadow-md shadow-rose-200 scale-105'
-                                            : 'bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                            <input
-                                type="text"
-                                placeholder="Search a memory..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full md:w-48 px-4 py-2 rounded-xl border border-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white/80 text-sm"
-                            />
-
-                            {isAdmin && (
-                                <button
-                                    onClick={() => setIsAddModalOpen(true)}
-                                    className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-md shadow-rose-300 transition-all hover:scale-105 whitespace-nowrap text-sm"
-                                >
-                                    <span>+ Add Memory</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {filteredMemories.length === 0 ? (
-                        <div className="text-center py-16 bg-white/40 rounded-3xl border border-dashed border-rose-200">
-                            <p className="text-rose-400 font-hand text-3xl mb-2">No memories found...</p>
-                            <p className="text-slate-500 text-sm">
-                                {isAdmin 
-                                    ? 'Click on "+ Add Memory" to start writing your story!' 
-                                    : 'Unlock Admin access to add new photos and tabs!'}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {filteredMemories.map((item, idx) => (
-                                <div 
-                                    key={item.id}
-                                    className="polaroid-card bg-white p-4 rounded-xl polaroid-shadow border border-slate-100 flex flex-col justify-between group relative"
-                                    style={{ transform: `rotate(${(idx % 3 === 0 ? -1.5 : idx % 3 === 1 ? 1.5 : 0)}deg)` }}
-                                >
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-amber-100/60 backdrop-blur-sm transform -rotate-1 border border-amber-200/50 z-10"></div>
-
-                                    <div>
-                                        <div 
-                                            className="relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-slate-100 mb-4"
-                                            onClick={() => setSelectedImageModal(item)}
-                                        >
-                                            <img 
-                                                src={item.image} 
-                                                alt={item.title} 
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                onError={(e) => { e.target.src = 'https://placehold.co/600x600/ffe4e6/e11d48?text=Our+Memory'; }}
-                                            />
-                                            <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-rose-600 font-semibold text-xs px-2.5 py-1 rounded-full shadow-sm">
-                                                {item.category}
-                                            </span>
-
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }}
-                                                className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:scale-110 transition"
-                                                title="Mark as Favorite"
-                                            >
-                                                <svg 
-                                                    xmlns="http://www.w3.org/2000/svg" 
-                                                    className={`w-5 h-5 ${item.isFavorite ? 'fill-rose-500 stroke-rose-500' : 'stroke-slate-400 fill-none'}`} 
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-
-                                        <h3 className="font-hand text-2xl font-bold text-slate-800 leading-tight mb-1">
-                                            {item.title}
-                                        </h3>
-                                        
-                                        <div className="flex items-center gap-3 text-xs text-slate-400 font-medium mb-3">
-                                            <span>📅 {new Date(item.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                            {item.location && <span>📍 {item.location}</span>}
-                                        </div>
-
-                                        <p className="text-slate-600 text-sm line-clamp-3 font-sans">
-                                            {item.description}
-                                        </p>
-                                    </div>
-
-                                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                        <button 
-                                            onClick={() => setSelectedImageModal(item)}
-                                            className="text-xs text-rose-500 font-semibold hover:underline flex items-center gap-1"
-                                        >
-                                            View Fullscreen 🔍
-                                        </button>
-                                        {isAdmin && (
-                                            <button 
-                                                onClick={() => deleteMemory(item.id)}
-                                                className="text-xs text-slate-400 hover:text-red-500 transition"
-                                                title="Delete Memory"
-                                            >
-                                                Delete
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Admin Unlock Modal */}
-                    {showPinModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl relative border border-rose-100">
-                                <button 
-                                    onClick={() => setShowPinModal(false)}
-                                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2"
-                                >
-                                    ✕
-                                </button>
-                                
-                                <div className="text-center mb-5">
-                                    <div className="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
-                                        🔒
-                                    </div>
-                                    <h3 className="font-bold text-slate-800 text-xl">Admin Access</h3>
-                                    <p className="text-xs text-slate-500 mt-1">Enter your passcode to unlock editing features.</p>
-                                    <p className="text-[11px] text-rose-400 mt-0.5">(Default PIN: <b>1234</b>)</p>
-                                </div>
-
-                                <form onSubmit={handleUnlockAdmin} className="space-y-4">
-                                    <div>
-                                        <input
-                                            type="password"
-                                            required
-                                            placeholder="Enter Passcode..."
-                                            value={pinInput}
-                                            onChange={(e) => setPinInput(e.target.value)}
-                                            className="w-full text-center tracking-widest text-lg px-4 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none"
-                                        />
-                                        {pinError && (
-                                            <div className="mt-2 text-center">
-                                                <p className="text-xs text-red-500 mb-1">{pinError}</p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setAdminPin('1234');
-                                                        saveConfigToCloud({ adminPin: '1234' });
-                                                        setPinError('');
-                                                        showToast("PIN reset to 1234!");
-                                                    }}
-                                                    className="text-[11px] text-rose-600 hover:underline font-semibold cursor-pointer"
-                                                >
-                                                    Reset PIN to 1234 🔄
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-md transition text-sm"
-                                    >
-                                        Unlock Admin Mode
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Change PIN Modal */}
-                    {isChangePinOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl relative border border-rose-100">
-                                <button onClick={() => setIsChangePinOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2">✕</button>
-                                <h3 className="font-bold text-slate-800 text-lg mb-2">Change Admin Passcode ⚙️</h3>
-                                <form onSubmit={handleChangePin} className="space-y-3">
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="New PIN (min 4 chars)..."
-                                        value={newPinInput}
-                                        onChange={(e) => setNewPinInput(e.target.value)}
-                                        className="w-full px-4 py-2 border border-rose-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="w-full py-2 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 transition"
-                                    >
-                                        Update PIN
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Manage Categories Modal */}
-                    {isCategoryModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl relative border border-rose-100">
-                                <button 
-                                    onClick={() => setIsCategoryModalOpen(false)}
-                                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2"
-                                >
-                                    ✕
-                                </button>
-
-                                <h3 className="font-title text-3xl font-bold text-rose-600 mb-1">Manage Memory Tabs 🏷️</h3>
-                                <p className="text-xs text-slate-500 mb-4">Add custom tabs to dynamically organize your memories together.</p>
-
-                                <form onSubmit={handleAddCategory} className="flex gap-2 mb-6">
-                                    <input
-                                        type="text"
-                                        placeholder="New Tab Name (e.g. Anniversaries)..."
-                                        value={newCategoryName}
-                                        onChange={(e) => setNewCategoryName(e.target.value)}
-                                        className="flex-1 px-4 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-xl text-xs transition"
-                                    >
-                                        + Add
-                                    </button>
-                                </form>
-
-                                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                    {categories.map((cat) => (
-                                        <div key={cat} className="flex items-center justify-between p-2.5 bg-rose-50/50 rounded-xl border border-rose-100 text-xs font-medium text-slate-700">
-                                            <span>🏷️ {cat}</span>
-                                            <button 
-                                                onClick={() => handleDeleteCategory(cat)}
-                                                className="text-slate-400 hover:text-red-500 font-bold px-2"
-                                                title="Delete Tab"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Add New Memory Modal */}
-                    {isAddModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border border-rose-100 max-h-[90vh] overflow-y-auto">
-                                <button 
-                                    onClick={() => setIsAddModalOpen(false)}
-                                    className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-2"
-                                >
-                                    ✕
-                                </button>
-                                
-                                <h2 className="font-title text-3xl font-bold text-rose-600 mb-1">
-                                    Add a New Memory 📸
-                                </h2>
-                                <p className="text-xs text-slate-500 mb-6">Add another chapter to your beautiful story!</p>
-
-                                <form onSubmit={handleAddMemory} className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Memory Title</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            placeholder="Ex: Rainy day walk in the park"
-                                            value={newMemory.title}
-                                            onChange={(e) => setNewMemory({ ...newMemory, title: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-sm"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Date</label>
-                                            <input
-                                                type="date"
-                                                required
-                                                value={newMemory.date}
-                                                onChange={(e) => setNewMemory({ ...newMemory, date: e.target.value })}
-                                                className="w-full px-3 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Tab / Category</label>
-                                            <select
-                                                value={newMemory.category}
-                                                onChange={(e) => setNewMemory({ ...newMemory, category: e.target.value })}
-                                                className="w-full px-3 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-sm bg-white"
-                                            >
-                                                {categories.map(cat => (
-                                                    <option key={cat} value={cat}>{cat}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Location (Optional)</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Ex: Paris, Venice, Cozy Cafe..."
-                                            value={newMemory.location}
-                                            onChange={(e) => setNewMemory({ ...newMemory, location: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-sm"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Photo (Upload File or Paste Web Link)</label>
-                                        <div className="space-y-2">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
-                                            />
-                                            <input
-                                                type="url"
-                                                placeholder="Or paste an image web URL..."
-                                                value={newMemory.image.startsWith('data:') ? '' : newMemory.image}
-                                                onChange={(e) => setNewMemory({ ...newMemory, image: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-xs"
-                                            />
-                                        </div>
-                                        {newMemory.image && (
-                                            <div className="mt-2 relative aspect-video rounded-xl overflow-hidden border border-rose-200 max-h-36">
-                                                <img src={newMemory.image} alt="Preview" className="w-full h-full object-cover" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Love Note / Caption</label>
-                                        <textarea
-                                            rows="3"
-                                            placeholder="Describe this unforgettable moment..."
-                                            value={newMemory.description}
-                                            onChange={(e) => setNewMemory({ ...newMemory, description: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-400 focus:outline-none text-sm"
-                                        ></textarea>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-rose-200 hover:scale-[1.01] transition text-sm"
-                                    >
-                                        Save Memory 💕
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Change Anniversary Date Modal */}
-                    {isDateModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl relative border border-rose-100">
-                                <h3 className="font-bold text-slate-800 text-lg mb-2">When did your story begin? 🌹</h3>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => handleUpdateStartDate(e.target.value)}
-                                    className="w-full px-4 py-2 border border-rose-200 rounded-xl mb-4 text-sm"
-                                />
-                                <button
-                                    onClick={() => setIsDateModalOpen(false)}
-                                    className="w-full py-2 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 transition"
-                                >
-                                    Confirm Date
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Image Detail Lightbox */}
-                    {selectedImageModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" onClick={() => setSelectedImageModal(null)}>
-                            <div className="bg-white p-4 sm:p-6 rounded-2xl max-w-2xl w-full shadow-2xl relative" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => setSelectedImageModal(null)}
-                                    className="absolute -top-4 -right-4 bg-white text-slate-800 rounded-full w-9 h-9 flex items-center justify-center font-bold shadow-md hover:bg-rose-50"
-                                >
-                                    ✕
-                                </button>
-                                <div className="rounded-xl overflow-hidden max-h-[60vh] mb-4 bg-slate-100">
-                                    <img src={selectedImageModal.image} alt={selectedImageModal.title} className="w-full h-full object-contain" />
-                                </div>
-                                <h2 className="font-hand text-3xl font-bold text-slate-800 mb-1">{selectedImageModal.title}</h2>
-                                <p className="text-xs text-rose-500 font-semibold mb-3">
-                                    📅 {new Date(selectedImageModal.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                    {selectedImageModal.location && ` • 📍 ${selectedImageModal.location}`}
-                                </p>
-                                <p className="text-slate-700 text-sm leading-relaxed">{selectedImageModal.description}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    <footer className="mt-16 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-center gap-4 border-t border-rose-200/60 pt-6">
-                        <p>© Dedicated to Ahmed & Ikram - Infinite Memories Scrapbook ✨</p>
-                    </footer>
-                </div>
-            );
+<body>
+
+  <header>
+    <h1>✨ Ahmed & Ikram ✨</h1>
+    <div class="sub-title">Our Shared Memory Album</div>
+    <div class="status-badge" id="syncStatus">☁️ Connected to Cloud</div>
+  </header>
+
+  <div class="counter-card">
+    <div>We have been together for</div>
+    <div class="counter-days" id="daysCounter">0</div>
+    <div>days ❤️</div>
+  </div>
+
+  <div class="admin-bar">
+    <div id="categoryFilters">
+      <!-- Dynamic Categories -->
+    </div>
+    <button class="btn btn-secondary" id="adminToggleBtn" onclick="openPasscodeModal()">🔒 Admin Access</button>
+  </div>
+
+  <!-- Admin Controls Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <h3>🛠️ Admin Toolkit</h3>
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div>
+        <h4>Add New Memory</h4>
+        <form id="addMemoryForm" onsubmit="handleAddMemory(event)">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="mTitle" required placeholder="Our trip to Paris...">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="mDate" required>
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="mLocation" placeholder="Toulouse, France">
+          </div>
+          <div class="form-group">
+            <label>Image URL (or Base64)</label>
+            <input type="text" id="mImage" required placeholder="https://... or upload">
+            <input type="file" accept="image/*" onchange="convertImageToBase64(this)" style="margin-top: 5px;">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input type="text" id="mCategory" placeholder="Travel, Dates, etc.">
+          </div>
+          <div class="form-group">
+            <label>Sweet Note</label>
+            <textarea id="mNote" rows="2" placeholder="Write a cute note..."></textarea>
+          </div>
+          <button type="submit" class="btn">Save Memory</button>
+        </form>
+      </div>
+
+      <div>
+        <h4>Settings</h4>
+        <div class="form-group">
+          <label>Anniversary Date</label>
+          <input type="date" id="anniversaryInput">
+          <button class="btn btn-secondary" onclick="updateAnniversaryDate()" style="margin-top: 5px;">Update Date</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div class="gallery" id="gallery">
+    <!-- Memories rendered dynamically -->
+  </div>
+
+  <!-- Passcode Modal -->
+  <div class="modal" id="passcodeModal">
+    <div class="modal-content">
+      <h3>Enter Admin Passcode</h3>
+      <input type="password" id="passcodeInput" style="margin: 15px 0; padding: 10px; width: 100%; text-align: center; font-size: 1.2rem;" placeholder="PIN">
+      <button class="btn" onclick="verifyPasscode()">Unlock</button>
+      <button class="btn btn-secondary" onclick="closePasscodeModal()" style="margin-top: 5px;">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. CONFIGURATION SUPABASE (Remplace avec tes valeurs)
+    const SUPABASE_URL = "TON_SUPABASE_URL";
+    const SUPABASE_KEY = "TA_CLE_ANON_SUPABASE";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let isAdmin = false;
+    let memoriesData = [];
+    let anniversaryDate = "2024-02-14";
+
+    // Initialize App
+    async function init() {
+      await fetchSettings();
+      await fetchMemories();
+      setupRealtimeSubscriptions();
+    }
+
+    // Fetch Settings (Anniversary date)
+    async function fetchSettings() {
+      const { data, error } = await supabase.from('settings').select('*');
+      if (data) {
+        const dateObj = data.find(item => item.key === 'anniversary_date');
+        if (dateObj) {
+          anniversaryDate = dateObj.value;
+          document.getElementById('anniversaryInput').value = anniversaryDate;
+          updateDaysCounter();
         }
+      }
+    }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-    </script>
+    // Calculate Days Together
+    function updateDaysCounter() {
+      const start = new Date(anniversaryDate);
+      const today = new Date();
+      const diffTime = Math.abs(today - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      document.getElementById('daysCounter').innerText = diffDays;
+    }
+
+    // Update Anniversary Date in Supabase
+    async function updateAnniversaryDate() {
+      const newDate = document.getElementById('anniversaryInput').value;
+      if (!newDate) return;
+      const { error } = await supabase.from('settings').upsert({ key: 'anniversary_date', value: newDate });
+      if (!error) {
+        alert("Anniversary date updated!");
+      }
+    }
+
+    // Fetch Memories from Cloud
+    async function fetchMemories() {
+      const { data, error } = await supabase.from('memories').select('*').order('date', { ascending: false });
+      if (!error && data) {
+        memoriesData = data;
+        renderGallery();
+      }
+    }
+
+    // Render Memories
+    function renderGallery() {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+
+      memoriesData.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'polaroid';
+        card.innerHTML = `
+          ${isAdmin ? `<button class="delete-btn" style="display:block" onclick="deleteMemory('${m.id}')">✕</button>` : ''}
+          <img src="${m.image_url}" alt="${m.title}">
+          <div class="polaroid-caption">
+            <div class="polaroid-title">${m.title}</div>
+            <div class="polaroid-date">📍 ${m.location || 'Special Place'} • 📅 ${m.date}</div>
+            <div class="polaroid-note">${m.note || ''}</div>
+          </div>
+        `;
+        gallery.appendChild(card);
+      });
+    }
+
+    // Add Memory to Supabase
+    async function handleAddMemory(e) {
+      e.preventDefault();
+      const title = document.getElementById('mTitle').value;
+      const date = document.getElementById('mDate').value;
+      const location = document.getElementById('mLocation').value;
+      const image_url = document.getElementById('mImage').value;
+      const category = document.getElementById('mCategory').value || 'General';
+      const note = document.getElementById('mNote').value;
+
+      const { error } = await supabase.from('memories').insert([{
+        title, date, location, image_url, category, note
+      }]);
+
+      if (!error) {
+        document.getElementById('addMemoryForm').reset();
+      } else {
+        alert("Error adding memory: " + error.message);
+      }
+    }
+
+    // Delete Memory
+    async function deleteMemory(id) {
+      if (confirm("Delete this memory?")) {
+        await supabase.from('memories').delete().eq('id', id);
+      }
+    }
+
+    // Image file helper to Base64
+    function convertImageToBase64(fileInput) {
+      const file = fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('mImage').value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Realtime Cloud Synchronization
+    function setupRealtimeSubscriptions() {
+      supabase
+        .channel('public-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'memories' }, payload => {
+          fetchMemories();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, payload => {
+          fetchSettings();
+        })
+        .subscribe();
+    }
+
+    // Admin Passcode Logic
+    function openPasscodeModal() {
+      if(isAdmin) {
+        isAdmin = false;
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminToggleBtn').innerText = '🔒 Admin Access';
+        renderGallery();
+        return;
+      }
+      document.getElementById('passcodeModal').style.display = 'flex';
+    }
+    function closePasscodeModal() {
+      document.getElementById('passcodeModal').style.display = 'none';
+    }
+    function verifyPasscode() {
+      const pin = document.getElementById('passcodeInput').value;
+      if (pin === '1234') {
+        isAdmin = true;
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminToggleBtn').innerText = '🔓 Lock Admin';
+        closePasscodeModal();
+        renderGallery();
+      } else {
+        alert("Incorrect PIN!");
+      }
+    }
+
+    // Start App
+    init();
+  </script>
 </body>
 </html>
